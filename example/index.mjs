@@ -46,8 +46,8 @@ let bonk = null
 if (process.argv[2]) {
   const invite = process.argv[2]
   const store = new Corestore(baseStorage + invite.slice(0, 8))
-  bonk = await Room.pair(store, invite, { schema })
-  await bonk.ready()
+  const pair = Room.pair(store, invite, { schema })
+  bonk = await pair.resolve()
   console.log('pair')
 } else {
   const store = new Corestore(baseStorage + Date.now())

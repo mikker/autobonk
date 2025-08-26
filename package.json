@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "brittle test/*.test.js",
     "example:schema": "cd example && rm -rf spec && node schema.mjs"
   },
   "type": "module",

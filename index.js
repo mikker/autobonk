@@ -1,4 +1,5 @@
 import z32 from 'z32'
+import b4a from 'b4a'
 import ReadyResource from 'ready-resource'
 import Autobase from 'autobase'
 import Hyperswarm from 'hyperswarm'
@@ -12,12 +13,16 @@ class ContextPairer extends ReadyResource {
     this.store = store
     this.invite = invite
     this.bootstrap = opts.bootstrap || null
+    this.schema = opts.schema
+    this.ContextClass = opts.ContextClass || Context
     this.swarm = null
     this.pairing = null
     this.candidate = null
 
     this.onresolve = null
     this.onreject = null
+
+    this.context = null
 
     this.ready()
   }
@@ -47,17 +52,18 @@ class ContextPairer extends ReadyResource {
       userData: key,
       onadd: async (result) => {
         if (this.context === null) {
-          this.context = new Context(this.store, {
+          this.context = new this.ContextClass(this.store, {
             swarm: this.swarm,
             key: result.key,
             encryptionKey: result.encryptionKey,
-            bootstrap: this.bootstrap
+            bootstrap: this.bootstrap,
+            schema: this.schema
           })
         }
         this.swarm = null
         this.store = null
         if (this.onresolve) this._whenWritable()
-        this.candidate.close()
+        this.candidate.close().catch(() => {})
       }
     })
   }
@@ -79,7 +85,10 @@ class ContextPairer extends ReadyResource {
   }
 
   _whenWritable() {
-    if (this.context.writable) return
+    if (this.context.writable) {
+      this.onresolve(this.context)
+      return
+    }
 
     const check = () => {
       if (this.context.writable) {
@@ -105,32 +114,27 @@ export class Context extends ReadyResource {
 
     this.store = store
 
-    this.bootstrap = opts.bootstrap || null
-    this.key = opts.key || null
-    this.encryptionKey = opts.encryptionKey || null
-
-    this.swarm = null
     this.base = null
+    this.bootstrap = opts.bootstrap || null
     this.member = null
     this.pairing = null
+    this.swarm = opts.swarm || null
 
     this.schema = opts.schema
-    if (!this.schema) throw 'Needs schema { db, dispatch }'
+    if (!this.schema.db || !this.schema.dispatch)
+      throw 'Needs schema { db, dispatch }'
 
     const { Router } = this.schema.dispatch
     this.router = new Router()
     this._setupRoutes()
 
-    this._boot()
+    this._boot(opts)
     this.ready()
   }
 
-  _boot() {
-    const {
-      key,
-      encryptionKey,
-      schema: { db }
-    } = this
+  _boot(opts = {}) {
+    const { key, encryptionKey } = opts
+    const { db } = this.schema
 
     this.base = new Autobase(this.store, key, {
       encrypt: true,
@@ -150,8 +154,6 @@ export class Context extends ReadyResource {
   }
 
   async _open() {
-    console.log('open')
-
     await this.base.ready()
 
     this.swarm = new Hyperswarm({
@@ -166,14 +168,23 @@ export class Context extends ReadyResource {
     this.member = this.pairing.addMember({
       discoveryKey: this.base.discoveryKey,
       onadd: async (candidate) => {
-        console.log('onadd', candidate)
+        const id = candidate.inviteId
+        const inv = await this.base.view.findOne('@autobonk/invite', {})
+        if (inv === null || !b4a.equals(inv.id, id)) {
+          return
+        }
+        candidate.open(inv.publicKey)
+        await this.addWriter(candidate.userData)
+        candidate.confirm({
+          key: this.base.key,
+          encryptionKey: this.base.encryptionKey
+        })
       }
     })
     this.swarm.join(this.base.discoveryKey)
   }
 
   async _close() {
-    console.log('close')
     await this.member.close()
     await this.pairing.close()
     await this.swarm.destroy()
@@ -205,14 +216,43 @@ export class Context extends ReadyResource {
     return this.base.writable
   }
 
+  get key() {
+    return this.base.key
+  }
+
+  get discoveryKey() {
+    return this.base.discoveryKey
+  }
+
+  get encryptionKey() {
+    return this.base.encryptionKey
+  }
+
   subscribe(cb) {
     this.on('update', cb)
     return () => this.off('update', cb)
   }
 
-  static async pair(store, invite, opts) {
-    const pairing = new ContextPairer(store, invite, opts)
-    return await pairing.resolve()
+  async addWriter(key) {
+    await this.base.append(
+      this.schema.dispatch.encode('@autobonk/add-writer', {
+        key: b4a.isBuffer(key) ? key : b4a.from(key)
+      })
+    )
+    return true
+  }
+
+  async removeWriter(key) {
+    await this.base.append(
+      this.schema.dispatch.encode('@autobonk/remove-writer', {
+        key: b4a.isBuffer(key) ? key : b4a.from(key)
+      })
+    )
+    return true
+  }
+
+  static pair(store, invite, opts = {}) {
+    return new ContextPairer(store, invite, { ...opts, ContextClass: this })
   }
 
   async createInvite(opts) {
