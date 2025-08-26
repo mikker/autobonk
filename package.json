@@ -1,0 +1,28 @@
+{
+  "name": "autobonk",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "example:schema": "cd example && rm -rf spec && node schema.mjs"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "Holepunch",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "autobase": "^7.18.1",
+    "blind-pairing": "^2.3.1",
+    "corestore": "^7.4.5",
+    "hypercore-crypto": "^3.6.1",
+    "hyperdb": "^4.16.1",
+    "hyperdispatch": "^1.4.1",
+    "hyperschema": "^1.14.0",
+    "hyperswarm": "^4.13.1",
+    "prettier": "^3.6.2",
+    "prettier-config-standard": "^7.0.0",
+    "ready-resource": "^1.2.0",
+    "z32": "^1.1.0"
+  }
+}
