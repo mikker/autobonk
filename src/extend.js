@@ -1,4 +1,4 @@
-export function extendSchema(schema) {
+export function extendSchema (schema) {
   const ns = schema.namespace('autobonk')
 
   ns.register({
@@ -41,7 +41,7 @@ export function extendSchema(schema) {
   })
 }
 
-export function extendDb(db) {
+export function extendDb (db) {
   const ns = db.namespace('autobonk')
 
   ns.collections.register({
@@ -56,7 +56,7 @@ export function extendDb(db) {
   })
 }
 
-export function extendDispatch(dispatch) {
+export function extendDispatch (dispatch) {
   const ns = dispatch.namespace('autobonk')
 
   ns.register({
