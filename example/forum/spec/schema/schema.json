@@ -1,0 +1,387 @@
+{
+  "version": 1,
+  "schema": [
+    {
+      "name": "writer",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": 1,
+      "fields": [
+        {
+          "name": "key",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "isIndexer",
+          "required": false,
+          "type": "bool",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "invite",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": 4,
+      "fields": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "invite",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "publicKey",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "expires",
+          "required": true,
+          "type": "int",
+          "version": 1
+        },
+        {
+          "name": "roles",
+          "required": false,
+          "array": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "createdBy",
+          "required": false,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "createdAt",
+          "required": false,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "revokedAt",
+          "required": false,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "revoke-invite",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "revokedAt",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "context-init",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "creatorKey",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "index",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "timestamp",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "role-def",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "name",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "permissions",
+          "required": true,
+          "array": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "rev",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "index",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "timestamp",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "acl-entry",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "subjectKey",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "roles",
+          "required": true,
+          "array": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "rev",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "index",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "timestamp",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "post",
+      "namespace": "forum",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "title",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "content",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "authorKey",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "createdAt",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "comment",
+      "namespace": "forum",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "postId",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "content",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "authorKey",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "createdAt",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "create-post",
+      "namespace": "forum",
+      "compact": false,
+      "flagsPosition": 0,
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "title",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "content",
+          "required": true,
+          "type": "string",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "delete-post",
+      "namespace": "forum",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "postId",
+          "required": true,
+          "type": "string",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "create-comment",
+      "namespace": "forum",
+      "compact": false,
+      "flagsPosition": 0,
+      "fields": [
+        {
+          "name": "id",
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "postId",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "content",
+          "required": true,
+          "type": "string",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "delete-comment",
+      "namespace": "forum",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "commentId",
+          "required": true,
+          "type": "string",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "setup-roles",
+      "namespace": "forum",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": []
+    },
+    {
+      "name": "promote-user",
+      "namespace": "forum",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "userKey",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "role",
+          "required": true,
+          "type": "string",
+          "version": 1
+        }
+      ]
+    }
+  ]
+}

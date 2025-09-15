@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "offset": 0,
+  "schema": [
+    {
+      "id": 0,
+      "name": "@autobonk/remove-writer",
+      "requestType": "@autobonk/writer",
+      "version": 1
+    },
+    {
+      "id": 1,
+      "name": "@autobonk/add-writer",
+      "requestType": "@autobonk/writer",
+      "version": 1
+    },
+    {
+      "id": 2,
+      "name": "@autobonk/add-invite",
+      "requestType": "@autobonk/invite",
+      "version": 1
+    },
+    {
+      "id": 3,
+      "name": "@autobonk/revoke-invite",
+      "requestType": "@autobonk/revoke-invite",
+      "version": 1
+    },
+    {
+      "id": 4,
+      "name": "@autobonk/init-context",
+      "requestType": "@autobonk/context-init",
+      "version": 1
+    },
+    {
+      "id": 5,
+      "name": "@autobonk/define-role",
+      "requestType": "@autobonk/role-def",
+      "version": 1
+    },
+    {
+      "id": 6,
+      "name": "@autobonk/grant-roles",
+      "requestType": "@autobonk/acl-entry",
+      "version": 1
+    },
+    {
+      "id": 7,
+      "name": "@autobonk/revoke-roles",
+      "requestType": "@autobonk/acl-entry",
+      "version": 1
+    },
+    {
+      "id": 8,
+      "name": "@forum/create-post",
+      "requestType": "@forum/create-post",
+      "version": 1
+    },
+    {
+      "id": 9,
+      "name": "@forum/delete-post",
+      "requestType": "@forum/delete-post",
+      "version": 1
+    },
+    {
+      "id": 10,
+      "name": "@forum/create-comment",
+      "requestType": "@forum/create-comment",
+      "version": 1
+    },
+    {
+      "id": 11,
+      "name": "@forum/delete-comment",
+      "requestType": "@forum/delete-comment",
+      "version": 1
+    },
+    {
+      "id": 12,
+      "name": "@forum/setup-roles",
+      "requestType": "@forum/setup-roles",
+      "version": 1
+    },
+    {
+      "id": 13,
+      "name": "@forum/promote-user",
+      "requestType": "@forum/promote-user",
+      "version": 1
+    }
+  ]
+}

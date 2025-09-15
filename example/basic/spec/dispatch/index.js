@@ -12,8 +12,13 @@ class Router {
     this._handler1 = null
     this._handler2 = null
     this._handler3 = null
+    this._handler4 = null
+    this._handler5 = null
+    this._handler6 = null
+    this._handler7 = null
+    this._handler8 = null
 
-    this._missing = 4
+    this._missing = 9
   }
 
   add (name, handler) {
@@ -27,8 +32,23 @@ class Router {
       case '@autobonk/add-invite':
         this._handler2 = handler
         break
-      case '@room/send-message':
+      case '@autobonk/revoke-invite':
         this._handler3 = handler
+        break
+      case '@autobonk/init-context':
+        this._handler4 = handler
+        break
+      case '@autobonk/define-role':
+        this._handler5 = handler
+        break
+      case '@autobonk/grant-roles':
+        this._handler6 = handler
+        break
+      case '@autobonk/revoke-roles':
+        this._handler7 = handler
+        break
+      case '@room/send-message':
+        this._handler8 = handler
         break
       default:
         throw new Error('Cannot register a handler for a nonexistent route: ' + name)
@@ -40,7 +60,12 @@ class Router {
     assert(this._handler0 !== null, 'Missing handler for "@autobonk/remove-writer"')
     assert(this._handler1 !== null, 'Missing handler for "@autobonk/add-writer"')
     assert(this._handler2 !== null, 'Missing handler for "@autobonk/add-invite"')
-    assert(this._handler3 !== null, 'Missing handler for "@room/send-message"')
+    assert(this._handler3 !== null, 'Missing handler for "@autobonk/revoke-invite"')
+    assert(this._handler4 !== null, 'Missing handler for "@autobonk/init-context"')
+    assert(this._handler5 !== null, 'Missing handler for "@autobonk/define-role"')
+    assert(this._handler6 !== null, 'Missing handler for "@autobonk/grant-roles"')
+    assert(this._handler7 !== null, 'Missing handler for "@autobonk/revoke-roles"')
+    assert(this._handler8 !== null, 'Missing handler for "@room/send-message"')
   }
 
   async dispatch (message, context) {
@@ -61,6 +86,16 @@ class Router {
         return this._handler2(op.value, context)
       case 3:
         return this._handler3(op.value, context)
+      case 4:
+        return this._handler4(op.value, context)
+      case 5:
+        return this._handler5(op.value, context)
+      case 6:
+        return this._handler6(op.value, context)
+      case 7:
+        return this._handler7(op.value, context)
+      case 8:
+        return this._handler8(op.value, context)
       default:
         throw new Error('Handler not found for ID:' + op.id)
     }
@@ -113,8 +148,38 @@ const route2 = {
 }
 
 const route3 = {
-  name: '@room/send-message',
+  name: '@autobonk/revoke-invite',
   id: 3,
+  enc: getEncoding('@autobonk/revoke-invite')
+}
+
+const route4 = {
+  name: '@autobonk/init-context',
+  id: 4,
+  enc: getEncoding('@autobonk/context-init')
+}
+
+const route5 = {
+  name: '@autobonk/define-role',
+  id: 5,
+  enc: getEncoding('@autobonk/role-def')
+}
+
+const route6 = {
+  name: '@autobonk/grant-roles',
+  id: 6,
+  enc: getEncoding('@autobonk/acl-entry')
+}
+
+const route7 = {
+  name: '@autobonk/revoke-roles',
+  id: 7,
+  enc: getEncoding('@autobonk/acl-entry')
+}
+
+const route8 = {
+  name: '@room/send-message',
+  id: 8,
   enc: getEncoding('@room/send-message')
 }
 
@@ -126,8 +191,18 @@ function getRouteByName (name) {
       return route1
     case '@autobonk/add-invite':
       return route2
-    case '@room/send-message':
+    case '@autobonk/revoke-invite':
       return route3
+    case '@autobonk/init-context':
+      return route4
+    case '@autobonk/define-role':
+      return route5
+    case '@autobonk/grant-roles':
+      return route6
+    case '@autobonk/revoke-roles':
+      return route7
+    case '@room/send-message':
+      return route8
     default:
       throw new Error('Handler not found for name: ' + name)
   }
@@ -143,6 +218,16 @@ function getRouteById (id) {
       return route2
     case 3:
       return route3
+    case 4:
+      return route4
+    case 5:
+      return route5
+    case 6:
+      return route6
+    case 7:
+      return route7
+    case 8:
+      return route8
     default:
       throw new Error('Handler not found for ID: ' + id)
   }
