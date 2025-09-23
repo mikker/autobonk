@@ -1,7 +1,7 @@
 import Hyperschema from 'hyperschema'
 import HyperdbBuilder from 'hyperdb/builder'
 import Hyperdispatch from 'hyperdispatch'
-import { extendSchema, extendDb, extendDispatch } from '../index.js'
+import { extendSchema, extendDb, extendDispatch } from '../../index.js'
 
 const schema = Hyperschema.from('./spec/schema')
 

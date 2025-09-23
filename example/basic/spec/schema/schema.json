@@ -1,0 +1,239 @@
+{
+  "version": 1,
+  "schema": [
+    {
+      "name": "writer",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": 1,
+      "fields": [
+        {
+          "name": "key",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "isIndexer",
+          "required": false,
+          "type": "bool",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "invite",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": 4,
+      "fields": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "invite",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "publicKey",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "expires",
+          "required": true,
+          "type": "int",
+          "version": 1
+        },
+        {
+          "name": "roles",
+          "required": false,
+          "array": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "createdBy",
+          "required": false,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "createdAt",
+          "required": false,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "revokedAt",
+          "required": false,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "revoke-invite",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "id",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "revokedAt",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "context-init",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "creatorKey",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "index",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "timestamp",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "role-def",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "name",
+          "required": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "permissions",
+          "required": true,
+          "array": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "rev",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "index",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "timestamp",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "acl-entry",
+      "namespace": "autobonk",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "subjectKey",
+          "required": true,
+          "type": "buffer",
+          "version": 1
+        },
+        {
+          "name": "roles",
+          "required": true,
+          "array": true,
+          "type": "string",
+          "version": 1
+        },
+        {
+          "name": "rev",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "index",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "timestamp",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "message",
+      "namespace": "room",
+      "compact": false,
+      "flagsPosition": 1,
+      "fields": [
+        {
+          "name": "index",
+          "required": true,
+          "type": "uint",
+          "version": 1
+        },
+        {
+          "name": "text",
+          "type": "string",
+          "version": 1
+        }
+      ]
+    },
+    {
+      "name": "send-message",
+      "namespace": "room",
+      "compact": false,
+      "flagsPosition": -1,
+      "fields": [
+        {
+          "name": "text",
+          "required": true,
+          "type": "string",
+          "version": 1
+        }
+      ]
+    }
+  ]
+}

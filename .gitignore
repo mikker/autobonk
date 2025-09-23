@@ -1,2 +1,6 @@
 /storage
 /example/storage
+.nvim.lua
+/tmp
+/example/forum/tmp
+package-lock.json

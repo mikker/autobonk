@@ -1,0 +1,84 @@
+{
+  "version": 0,
+  "offset": 0,
+  "schema": [
+    {
+      "name": "invite",
+      "namespace": "autobonk",
+      "id": 0,
+      "type": 1,
+      "indexes": [],
+      "schema": "@autobonk/invite",
+      "derived": false,
+      "key": [
+        "id"
+      ],
+      "trigger": null
+    },
+    {
+      "name": "writer",
+      "namespace": "autobonk",
+      "id": 1,
+      "type": 1,
+      "indexes": [],
+      "schema": "@autobonk/writer",
+      "derived": false,
+      "key": [
+        "key"
+      ],
+      "trigger": null
+    },
+    {
+      "name": "context-init",
+      "namespace": "autobonk",
+      "id": 2,
+      "type": 1,
+      "indexes": [],
+      "schema": "@autobonk/context-init",
+      "derived": false,
+      "key": [
+        "creatorKey"
+      ],
+      "trigger": null
+    },
+    {
+      "name": "role-def",
+      "namespace": "autobonk",
+      "id": 3,
+      "type": 1,
+      "indexes": [],
+      "schema": "@autobonk/role-def",
+      "derived": false,
+      "key": [
+        "name"
+      ],
+      "trigger": null
+    },
+    {
+      "name": "acl-entry",
+      "namespace": "autobonk",
+      "id": 4,
+      "type": 1,
+      "indexes": [],
+      "schema": "@autobonk/acl-entry",
+      "derived": false,
+      "key": [
+        "subjectKey"
+      ],
+      "trigger": null
+    },
+    {
+      "name": "messages",
+      "namespace": "room",
+      "id": 5,
+      "type": 1,
+      "indexes": [],
+      "schema": "@room/message",
+      "derived": false,
+      "key": [
+        "index"
+      ],
+      "trigger": null
+    }
+  ]
+}
