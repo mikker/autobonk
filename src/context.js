@@ -199,33 +199,49 @@ export class Context extends ReadyResource {
         const inv = await this.base.view.get('@autobonk/invite', { id })
 
         if (!inv) {
-          candidate.deny({ status: 1 })
           return
         }
 
+        const openAndDeny = async (status) => {
+          try {
+            candidate.open(inv.publicKey)
+            candidate.deny({ status })
+          } catch (_) {
+            // If we cannot open the invite we cannot craft a reply.
+          }
+        }
+
         if (inv.revokedAt) {
-          candidate.deny({ status: 2 })
+          await openAndDeny(2)
           return
         }
 
         if (inv.expires && inv.expires > 0 && inv.expires <= Date.now()) {
-          candidate.deny({ status: 3 })
+          await openAndDeny(3)
           return
         }
 
         try {
           await this.requirePermission(this.writerKey, 'user:invite')
         } catch (err) {
-          if (err instanceof PermissionError) return
+          if (err instanceof PermissionError) {
+            await openAndDeny(1)
+            return
+          }
           throw err
         }
 
-        candidate.open(inv.publicKey)
+        let userData
+        try {
+          userData = candidate.open(inv.publicKey)
+        } catch (_) {
+          return
+        }
 
-        await this.addWriter(candidate.userData)
+        await this.addWriter(userData)
 
         if (Array.isArray(inv.roles) && inv.roles.length > 0) {
-          await this.grantRoles(candidate.userData, inv.roles)
+          await this.grantRoles(userData, inv.roles)
         }
 
         candidate.confirm({
