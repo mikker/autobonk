@@ -232,7 +232,7 @@ test('basic permission checking works', async (t) => {
   try {
     await room.requirePermission(ownerKey, 'role:create')
     t.pass('owner passes requirePermission check')
-  } catch (err) {
+  } catch (_) {
     t.fail('owner should have permission')
   }
 

@@ -224,7 +224,7 @@ export class Manager extends ReadyResource {
       const context = this.contexts.get(keyHex)
       try {
         await context.close()
-      } catch (err) {
+      } catch (_) {
         // noop
       }
       this.contexts.delete(keyHex)

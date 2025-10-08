@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "brittle --timeout 60000 test/*.test.js",
-    "example:schema": "cd example/basic && rm -rf spec && node schema.mjs && cd ../forum && rm -rf spec && node schema.mjs"
+    "example:schema": "cd example/basic && rm -rf spec && node schema.mjs && cd ../forum && rm -rf spec && node schema.mjs",
+    "format": "prettier . --write"
   },
   "type": "module",
   "keywords": [],
