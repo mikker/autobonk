@@ -1,3 +1,5 @@
+![Autobonk](/docs/autobonk.webp)
+
 # Autobonk (EXPERIMENTAL)
 
 Autobonk is a ready-made manager and context runtime for building Hypercore-powered, peer-to-peer applications with deterministic schemas and role-based permissions.
