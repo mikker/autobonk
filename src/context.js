@@ -872,13 +872,13 @@ export class Context extends ReadyResource {
     const buf1 = Buffer.isBuffer(key1)
       ? key1
       : ArrayBuffer.isView(key1)
-        ? b4a.from(key1)
-        : null
+      ? b4a.from(key1)
+      : null
     const buf2 = Buffer.isBuffer(key2)
       ? key2
       : ArrayBuffer.isView(key2)
-        ? b4a.from(key2)
-        : null
+      ? b4a.from(key2)
+      : null
 
     if (!buf1 || !buf2) return false
 
@@ -896,8 +896,8 @@ export class Context extends ReadyResource {
       typeof opts.index === 'number'
         ? opts.index
         : typeof base.length === 'number'
-          ? base.length
-          : this.base.length
+        ? base.length
+        : this.base.length
 
     const timestamp =
       typeof opts.timestamp === 'number' ? opts.timestamp : Date.now()
@@ -916,8 +916,8 @@ export class Context extends ReadyResource {
       typeof opts.blockIndex === 'number'
         ? opts.blockIndex
         : typeof opts.indexBase === 'number'
-          ? opts.indexBase
-          : 0
+        ? opts.indexBase
+        : 0
     const order = typeof opts.order === 'number' ? opts.order : 0
     const deterministic = blockIndex * 1000 + order
     const index = typeof opts.index === 'number' ? opts.index : deterministic
