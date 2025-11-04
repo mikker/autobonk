@@ -16,7 +16,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
@@ -34,14 +34,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
 
       - name: Run tests
         run: |
-          npm test:node && \
+          npm run test:node && \
             node example/basic/basic.js && \
             node example/forum/forum.js
 
@@ -54,13 +54,13 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
 
       - name: Run tests
         run: |
-          npm test:bare && \
+          npm run test:bare && \
             bare example/basic/basic.js && \
             bare example/forum/forum.js
