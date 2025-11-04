@@ -42,9 +42,7 @@ export class Room extends Context {
   }
 
   async sendMessage(text) {
-    await this.base.append(
-      this.schema.dispatch.encode('@room/send-message', { text })
-    )
+    await this.base.append(this.schema.dispatch.encode('@room/send-message', { text }))
   }
 
   async lastMessage() {

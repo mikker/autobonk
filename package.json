@@ -4,8 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "brittle --timeout 60000 test/*.test.js",
+    "test": "npm run test:node && npm run test:bare",
+    "test:node": "brittle-node --timeout 60000 test/*.test.js",
+    "test:bare": "brittle-bare --timeout 60000 test/*.test.js",
     "example:schema": "cd example/basic && rm -rf spec && node schema.mjs && cd ../forum && rm -rf spec && node schema.mjs",
+    "lint": "prettier --check . && lunte",
     "format": "prettier . --write"
   },
   "type": "module",
@@ -14,24 +17,35 @@
   "license": "Apache-2.0",
   "dependencies": {
     "arg": "^5.0.2",
-    "autobase": "^7.18.1",
+    "autobase": "^7.21.1",
     "bare-path": "^3.0.0",
     "blind-pairing": "^2.3.1",
-    "corestore": "^7.4.5",
+    "corestore": "^7.5.0",
     "hypercore-crypto": "^3.6.1",
-    "hyperdb": "^4.16.1",
-    "hyperdispatch": "^1.4.1",
-    "hyperschema": "^1.14.0",
-    "hyperswarm": "^4.13.1",
+    "hyperdb": "^4.19.1",
+    "hyperdispatch": "^1.4.4",
+    "hyperschema": "^1.17.0",
+    "hyperswarm": "^4.14.2",
     "ready-resource": "^1.2.0",
     "z32": "^1.1.0"
   },
   "devDependencies": {
-    "brittle": "^3.18.6",
+    "bare-fs": "^4.5.0",
+    "bare-os": "^3.6.2",
+    "brittle": "^3.19.0",
+    "lunte": "^1.2.0",
     "prettier": "^3.6.2",
-    "prettier-config-holepunch": "^1.0.0"
+    "prettier-config-holepunch": "^2.0.0"
   },
   "imports": {
+    "os": {
+      "bare": "bare-os",
+      "default": "os"
+    },
+    "fs": {
+      "bare": "bare-fs",
+      "default": "fs"
+    },
     "path": {
       "bare": "bare-path",
       "default": "path"

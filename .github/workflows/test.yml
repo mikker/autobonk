@@ -2,10 +2,30 @@ name: Test
 
 on:
   push:
+    branches:
+      - main
   pull_request:
 
 jobs:
-  test:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run lint
+        run: |
+          npm run lint
+
+  test-node:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +41,29 @@ jobs:
 
       - name: Run tests
         run: |
-          npm test && \
+          npm run test:node && \
             node example/basic/basic.js && \
             node example/forum/forum.js
+
+  test-bare:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install bare
+        run: npm install -g bare
+
+      - name: Run tests
+        run: |
+          npm run test:bare && \
+            bare example/basic/basic.js && \
+            bare example/forum/forum.js

@@ -33,9 +33,7 @@ class ForumContext extends Context {
       await context.view.delete('@forum/posts', { id: data.postId })
 
       // Also delete all comments on this post
-      const comments = await context.view
-        .find('@forum/comments', { postId: data.postId })
-        .toArray()
+      const comments = await context.view.find('@forum/comments', { postId: data.postId }).toArray()
       for (const comment of comments) {
         await context.view.delete('@forum/comments', { id: comment.id })
       }
@@ -88,17 +86,12 @@ class ForumContext extends Context {
       console.log('✅ Permission check passed')
 
       console.log('🔧 Defining member role...')
-      await this.defineRole(
-        'member',
-        ['post:create', 'comment:create'],
-        context.writerKey,
-        {
-          base: context.base,
-          view: context.view,
-          blockIndex: context.blockIndex,
-          order: 1
-        }
-      )
+      await this.defineRole('member', ['post:create', 'comment:create'], context.writerKey, {
+        base: context.base,
+        view: context.view,
+        blockIndex: context.blockIndex,
+        order: 1
+      })
       console.log('🔧 Defining moderator role...')
       await this.defineRole(
         'moderator',
@@ -120,17 +113,12 @@ class ForumContext extends Context {
       }) // No permissions, read-only
 
       console.log('👤 Granting owner member role...')
-      await this.grantRoles(
-        context.writerKey,
-        ['owner', 'member'],
-        context.writerKey,
-        {
-          base: context.base,
-          view: context.view,
-          blockIndex: context.blockIndex,
-          order: 4
-        }
-      )
+      await this.grantRoles(context.writerKey, ['owner', 'member'], context.writerKey, {
+        base: context.base,
+        view: context.view,
+        blockIndex: context.blockIndex,
+        order: 4
+      })
       console.log('✅ Roles setup complete')
 
       return { message: 'Roles created: reader, member, moderator' }
@@ -198,9 +186,7 @@ async function example() {
 
     // Set up roles (as owner)
     console.log('🚀 Triggering setup-roles action...')
-    await forum.base.append(
-      forum.schema.dispatch.encode('@forum/setup-roles', {})
-    )
+    await forum.base.append(forum.schema.dispatch.encode('@forum/setup-roles', {}))
     console.log('👥 Roles set up: reader, member, moderator')
 
     // Create some test posts
