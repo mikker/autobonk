@@ -104,9 +104,7 @@ async function createRoom(nameArg) {
   invites.forEach((entry, index) => {
     const inviteId = entry.id.toString('hex')
     const shortId =
-      inviteId.length > 12
-        ? `${inviteId.slice(0, 8)}…${inviteId.slice(-4)}`
-        : inviteId
+      inviteId.length > 12 ? `${inviteId.slice(0, 8)}…${inviteId.slice(-4)}` : inviteId
     console.log(`Invite ${index + 1} id: ${shortId}`)
   })
 }

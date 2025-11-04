@@ -367,21 +367,14 @@ export class Context extends ReadyResource {
 
   async requirePermission(subjectKey, permission) {
     // Skip validation during initial sync before context is initialized
-    const contextInit = await this.base.view.findOne(
-      '@autobonk/context-init',
-      {}
-    )
+    const contextInit = await this.base.view.findOne('@autobonk/context-init', {})
     if (!contextInit) {
       return
     }
 
     const hasAccess = await this.hasPermission(subjectKey, permission)
     if (!hasAccess) {
-      throw new PermissionError(
-        `Missing permission: ${permission}`,
-        permission,
-        subjectKey
-      )
+      throw new PermissionError(`Missing permission: ${permission}`, permission, subjectKey)
     }
   }
 
@@ -396,9 +389,7 @@ export class Context extends ReadyResource {
     const existing = await view.get('@autobonk/role-def', { name })
     const rev = existing ? existing.rev + 1 : 1
 
-    const permissionsArray = Array.isArray(permissions)
-      ? permissions
-      : [permissions]
+    const permissionsArray = Array.isArray(permissions) ? permissions : [permissions]
 
     await this._appendOrApply({
       base,
@@ -560,9 +551,7 @@ export class Context extends ReadyResource {
       isIndexer
     }
 
-    await this.base.append(
-      this.schema.dispatch.encode('@autobonk/add-writer', record)
-    )
+    await this.base.append(this.schema.dispatch.encode('@autobonk/add-writer', record))
     return true
   }
 
@@ -657,9 +646,7 @@ export class Context extends ReadyResource {
       createdAt: Date.now()
     }
 
-    await this.base.append(
-      this.schema.dispatch.encode('@autobonk/add-invite', record)
-    )
+    await this.base.append(this.schema.dispatch.encode('@autobonk/add-invite', record))
 
     return z32.encode(invite)
   }
@@ -852,13 +839,7 @@ export class Context extends ReadyResource {
 
   // Shared guard to enforce sequential revisions. Call whenever client input must
   // match the next expected revision.
-  async _assertNextRevision(
-    view,
-    collection,
-    selector,
-    rev,
-    errorPrefix = 'Invalid revision'
-  ) {
+  async _assertNextRevision(view, collection, selector, rev, errorPrefix = 'Invalid revision') {
     const existing = await view.get(collection, selector)
     const expectedRev = existing ? existing.rev + 1 : 1
     if (rev !== expectedRev) {
@@ -869,16 +850,8 @@ export class Context extends ReadyResource {
   _keysEqual(key1, key2) {
     if (!key1 || !key2) return false
 
-    const buf1 = Buffer.isBuffer(key1)
-      ? key1
-      : ArrayBuffer.isView(key1)
-        ? b4a.from(key1)
-        : null
-    const buf2 = Buffer.isBuffer(key2)
-      ? key2
-      : ArrayBuffer.isView(key2)
-        ? b4a.from(key2)
-        : null
+    const buf1 = Buffer.isBuffer(key1) ? key1 : ArrayBuffer.isView(key1) ? b4a.from(key1) : null
+    const buf2 = Buffer.isBuffer(key2) ? key2 : ArrayBuffer.isView(key2) ? b4a.from(key2) : null
 
     if (!buf1 || !buf2) return false
 
@@ -899,8 +872,7 @@ export class Context extends ReadyResource {
           ? base.length
           : this.base.length
 
-    const timestamp =
-      typeof opts.timestamp === 'number' ? opts.timestamp : Date.now()
+    const timestamp = typeof opts.timestamp === 'number' ? opts.timestamp : Date.now()
 
     return base.append(
       this.schema.dispatch.encode(dispatch, {
@@ -921,8 +893,7 @@ export class Context extends ReadyResource {
     const order = typeof opts.order === 'number' ? opts.order : 0
     const deterministic = blockIndex * 1000 + order
     const index = typeof opts.index === 'number' ? opts.index : deterministic
-    const timestamp =
-      typeof opts.timestamp === 'number' ? opts.timestamp : deterministic
+    const timestamp = typeof opts.timestamp === 'number' ? opts.timestamp : deterministic
     return { index, timestamp }
   }
 }

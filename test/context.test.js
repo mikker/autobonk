@@ -66,11 +66,7 @@ test('two autobonks communicate bidirectionally', async (t) => {
 
   t.is(room1Messages.length, 2, 'room1 received both messages')
   const texts = room1Messages.map((m) => m.text).sort()
-  t.alike(
-    texts,
-    ['Hello from room1', 'Hello from room2'].sort(),
-    'both messages present'
-  )
+  t.alike(texts, ['Hello from room1', 'Hello from room2'].sort(), 'both messages present')
 })
 
 test('permission message schemas work', async (t) => {
@@ -120,17 +116,11 @@ test('permission message schemas work', async (t) => {
   await new Promise((resolve) => setTimeout(resolve, 100))
 
   // Verify data was stored
-  const contextInits = await room.base.view
-    .find('@autobonk/context-init')
-    .toArray()
+  const contextInits = await room.base.view.find('@autobonk/context-init').toArray()
 
   // We now expect 1 record from automatic initialization
   t.is(contextInits.length, 1, 'context init stored')
-  t.is(
-    contextInits[0].creatorKey.length,
-    32,
-    'creator key is proper public key length'
-  )
+  t.is(contextInits[0].creatorKey.length, 32, 'creator key is proper public key length')
 
   const roleDefs = await room.base.view.find('@autobonk/role-def').toArray()
   const ownerRole = roleDefs.find((role) => role.name === OWNER_ROLE_NAME)
@@ -145,16 +135,10 @@ test('permission message schemas work', async (t) => {
 
   const adminRole = roleDefs.find((role) => role.name === 'admin')
   t.ok(adminRole, 'admin role stored')
-  t.alike(
-    adminRole.permissions,
-    ['role:create', 'role:assign'],
-    'admin permissions correct'
-  )
+  t.alike(adminRole.permissions, ['role:create', 'role:assign'], 'admin permissions correct')
 
   const aclEntries = await room.base.view.find('@autobonk/acl-entry').toArray()
-  const ownerAcl = aclEntries.find((entry) =>
-    entry.subjectKey.equals(contextInits[0].creatorKey)
-  )
+  const ownerAcl = aclEntries.find((entry) => entry.subjectKey.equals(contextInits[0].creatorKey))
   t.ok(ownerAcl, 'owner ACL entry stored')
   t.alike(ownerAcl.roles, [OWNER_ROLE_NAME], 'owner has owner role')
 
@@ -194,30 +178,13 @@ test('basic permission checking works', async (t) => {
   const randomKey = Buffer.from('some-random-user-key-32-bytes-xx')
 
   // Test owner role grants meta-permissions
-  t.ok(
-    await room.hasPermission(ownerKey, 'role:create'),
-    'owner has role:create'
-  )
-  t.ok(
-    await room.hasPermission(ownerKey, 'role:assign'),
-    'owner has role:assign'
-  )
-  t.ok(
-    await room.hasPermission(ownerKey, 'user:invite'),
-    'owner has user:invite'
-  )
+  t.ok(await room.hasPermission(ownerKey, 'role:create'), 'owner has role:create')
+  t.ok(await room.hasPermission(ownerKey, 'role:assign'), 'owner has role:assign')
+  t.ok(await room.hasPermission(ownerKey, 'user:invite'), 'owner has user:invite')
 
   // Test random user has no permissions
-  t.is(
-    await room.hasPermission(randomKey, 'role:create'),
-    false,
-    'random user lacks role:create'
-  )
-  t.is(
-    await room.hasPermission(randomKey, 'role:assign'),
-    false,
-    'random user lacks role:assign'
-  )
+  t.is(await room.hasPermission(randomKey, 'role:create'), false, 'random user lacks role:create')
+  t.is(await room.hasPermission(randomKey, 'role:assign'), false, 'random user lacks role:assign')
 
   // Test requirePermission throws for unauthorized user
   try {
@@ -286,16 +253,8 @@ test('addWriter metadata passes through to Autobase', async (t) => {
 
   t.ok(captured.length >= 2, 'capture both addWriter dispatches')
   t.ok(captured[0].key.equals(writerOne), 'first writer key passed through')
-  t.is(
-    captured[0].isIndexer,
-    false,
-    'first writer metadata disables indexer role'
-  )
-  t.is(
-    captured[1].isIndexer,
-    true,
-    'default write keeps Autobase indexing behavior'
-  )
+  t.is(captured[0].isIndexer, false, 'first writer metadata disables indexer role')
+  t.is(captured[1].isIndexer, true, 'default write keeps Autobase indexing behavior')
 })
 
 test('ACL-based permissions work', async (t) => {
@@ -347,26 +306,12 @@ test('ACL-based permissions work', async (t) => {
   await new Promise((resolve) => setTimeout(resolve, 100))
 
   // Test user now has the granted permissions
-  t.ok(
-    await room.hasPermission(userKey, 'post:delete'),
-    'user has post:delete permission'
-  )
-  t.ok(
-    await room.hasPermission(userKey, 'user:ban'),
-    'user has user:ban permission'
-  )
+  t.ok(await room.hasPermission(userKey, 'post:delete'), 'user has post:delete permission')
+  t.ok(await room.hasPermission(userKey, 'user:ban'), 'user has user:ban permission')
 
   // Test user does not have other permissions
-  t.is(
-    await room.hasPermission(userKey, 'role:create'),
-    false,
-    'user lacks role:create'
-  )
-  t.is(
-    await room.hasPermission(userKey, 'post:create'),
-    false,
-    'user lacks post:create'
-  )
+  t.is(await room.hasPermission(userKey, 'role:create'), false, 'user lacks role:create')
+  t.is(await room.hasPermission(userKey, 'post:create'), false, 'user lacks post:create')
 
   t.pass('ACL-based permissions work')
 })
@@ -404,11 +349,7 @@ test('role/ACL management API works', async (t) => {
   // Verify roles were created
   const editorRole = await room.getRole('editor')
   t.ok(editorRole, 'editor role created')
-  t.alike(
-    editorRole.permissions,
-    ['post:create', 'post:edit'],
-    'editor permissions correct'
-  )
+  t.alike(editorRole.permissions, ['post:create', 'post:edit'], 'editor permissions correct')
 
   const adminRole = await room.getRole('admin')
   t.ok(adminRole, 'admin role created')
@@ -429,16 +370,9 @@ test('role/ACL management API works', async (t) => {
   t.alike(userRoles, ['editor'], 'user has editor role')
 
   // Verify user has permissions from the role
-  t.ok(
-    await room.hasPermission(userKey, 'post:create'),
-    'user can create posts'
-  )
+  t.ok(await room.hasPermission(userKey, 'post:create'), 'user can create posts')
   t.ok(await room.hasPermission(userKey, 'post:edit'), 'user can edit posts')
-  t.is(
-    await room.hasPermission(userKey, 'post:delete'),
-    false,
-    'user cannot delete posts'
-  )
+  t.is(await room.hasPermission(userKey, 'post:delete'), false, 'user cannot delete posts')
 
   // Test upgrading role
   await room.grantRoles(userKey, ['admin'])
@@ -451,10 +385,7 @@ test('role/ACL management API works', async (t) => {
   t.alike(upgradedRoles, ['admin'], 'user upgraded to admin')
 
   // Verify user now has delete permission
-  t.ok(
-    await room.hasPermission(userKey, 'post:delete'),
-    'admin can delete posts'
-  )
+  t.ok(await room.hasPermission(userKey, 'post:delete'), 'admin can delete posts')
 
   // Test revokeRoles API
   await room.revokeRoles(userKey)
@@ -467,16 +398,8 @@ test('role/ACL management API works', async (t) => {
   t.alike(revokedRoles, [], 'user has no roles after revocation')
 
   // Verify user has no permissions
-  t.is(
-    await room.hasPermission(userKey, 'post:create'),
-    false,
-    'revoked user cannot create posts'
-  )
-  t.is(
-    await room.hasPermission(userKey, 'post:delete'),
-    false,
-    'revoked user cannot delete posts'
-  )
+  t.is(await room.hasPermission(userKey, 'post:create'), false, 'revoked user cannot create posts')
+  t.is(await room.hasPermission(userKey, 'post:delete'), false, 'revoked user cannot delete posts')
 
   t.pass('role/ACL management API works')
 })
@@ -521,18 +444,10 @@ test('grantRoles handles apply-mode snapshot', async (t) => {
     subjectKey: userKey
   })
   t.ok(aclEntry, 'acl entry persisted')
-  t.alike(
-    aclEntry.roles.sort(),
-    ['member', 'postboss'],
-    'roles recorded through apply helper'
-  )
+  t.alike(aclEntry.roles.sort(), ['member', 'postboss'], 'roles recorded through apply helper')
 
   const audit = await room.getRoles(userKey)
-  t.alike(
-    audit.sort(),
-    ['member', 'postboss'],
-    'getRoles sees updated assignment'
-  )
+  t.alike(audit.sort(), ['member', 'postboss'], 'getRoles sees updated assignment')
 })
 
 test('role-based invites', async (t) => {
@@ -588,38 +503,18 @@ test('role-based invites', async (t) => {
   // Check that joiner has the assigned roles
   const joinerKey = room2.base.local.key // writer key, not context key
   const assignedRoles = await room1.getRoles(joinerKey)
-  t.alike(
-    assignedRoles.sort(),
-    ['editor', 'viewer'],
-    'joiner has assigned roles'
-  )
+  t.alike(assignedRoles.sort(), ['editor', 'viewer'], 'joiner has assigned roles')
 
   // Check that joiner has permissions from those roles
-  t.ok(
-    await room1.hasPermission(joinerKey, 'post:read'),
-    'joiner can read posts'
-  )
-  t.ok(
-    await room1.hasPermission(joinerKey, 'post:create'),
-    'joiner can create posts'
-  )
+  t.ok(await room1.hasPermission(joinerKey, 'post:read'), 'joiner can read posts')
+  t.ok(await room1.hasPermission(joinerKey, 'post:create'), 'joiner can create posts')
 
   // Test permission enforcement from room2's perspective
-  t.ok(
-    await room2.hasPermission(joinerKey, 'post:read'),
-    'joiner can read posts (from room2)'
-  )
-  t.ok(
-    await room2.hasPermission(joinerKey, 'post:create'),
-    'joiner can create posts (from room2)'
-  )
+  t.ok(await room2.hasPermission(joinerKey, 'post:read'), 'joiner can read posts (from room2)')
+  t.ok(await room2.hasPermission(joinerKey, 'post:create'), 'joiner can create posts (from room2)')
 
   // Verify joiner cannot invite others (no user:invite permission)
-  t.is(
-    await room2.hasPermission(joinerKey, 'user:invite'),
-    false,
-    'joiner cannot create invites'
-  )
+  t.is(await room2.hasPermission(joinerKey, 'user:invite'), false, 'joiner cannot create invites')
 })
 
 test('invite permission enforcement', async (t) => {
@@ -651,11 +546,7 @@ test('invite permission enforcement', async (t) => {
 
   // Verify user cannot create invites by checking hasPermission directly
   const hasInvitePermission = await room.hasPermission(userKey, 'user:invite')
-  t.is(
-    hasInvitePermission,
-    false,
-    'user without permission cannot create invites'
-  )
+  t.is(hasInvitePermission, false, 'user without permission cannot create invites')
 })
 
 test('multi-invite lifecycle is tracked and revocable', async (t) => {
@@ -707,14 +598,8 @@ test('multi-invite lifecycle is tracked and revocable', async (t) => {
 
   const allInvites = await room.listInvites({ includeRevoked: true })
   const revokedRecord = allInvites.find((entry) => entry.revokedAt)
-  t.ok(
-    revokedRecord,
-    'revoked invite still present when including revoked entries'
-  )
-  t.ok(
-    typeof revokedRecord.revokedAt === 'number',
-    'revoked invite records timestamp'
-  )
+  t.ok(revokedRecord, 'revoked invite still present when including revoked entries')
+  t.ok(typeof revokedRecord.revokedAt === 'number', 'revoked invite records timestamp')
 
   const remaining = await room.listInvites()
   t.is(remaining.length, 1, 'exactly one invite to clean up')
@@ -749,10 +634,7 @@ test('denounceRole removes owner privileges', async (t) => {
   const contextInit = await room.base.view.findOne('@autobonk/context-init', {})
   const ownerKey = contextInit.creatorKey
 
-  t.ok(
-    await room.hasPermission(ownerKey, 'role:create'),
-    'owner starts with elevated permissions'
-  )
+  t.ok(await room.hasPermission(ownerKey, 'role:create'), 'owner starts with elevated permissions')
 
   const result = await room.denounceRole(OWNER_ROLE_NAME)
   t.ok(result, 'denounceRole returns true when owner role removed')
@@ -772,10 +654,6 @@ test('denounceRole removes owner privileges', async (t) => {
     await room.defineRole('replacement-owner', ['role:create'])
     t.fail('denounced owner should not be able to define roles')
   } catch (err) {
-    t.is(
-      err.name,
-      'PermissionError',
-      'missing permission blocks role definition'
-    )
+    t.is(err.name, 'PermissionError', 'missing permission blocks role definition')
   }
 })
