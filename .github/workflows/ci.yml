@@ -1,0 +1,29 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Checks
+
+    steps:
+      - uses: holepunchto/actions/node-base@current
+      - run: npm run lint
+
+  test:
+    runs-on: ${{ matrix.os }}
+    name: Test ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+          - os: macos-latest
+          - os: windows-latest
+    steps:
+      - uses: holepunchto/actions/node-base@current
+      - run: npm install -g bare-runtime
+      - run: npm test
