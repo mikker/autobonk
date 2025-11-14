@@ -5,6 +5,7 @@ import Autobase from 'autobase'
 import Hyperswarm from 'hyperswarm'
 import HyperDB from 'hyperdb'
 import BlindPairing from 'blind-pairing'
+import Wakeup from 'protomux-wakeup'
 
 const OWNER_ROLE_NAME = 'owner'
 const OWNER_PERMISSIONS = [
@@ -35,6 +36,7 @@ class ContextPairer extends ReadyResource {
     this.schema = opts.schema
     this.ContextClass = opts.ContextClass || Context
     this.swarm = null
+    this.wakeup = new Wakeup()
     this.pairing = null
     this.candidate = null
 
@@ -57,8 +59,10 @@ class ContextPairer extends ReadyResource {
     }
 
     const store = this.store
+    const wakeup = this.wakeup
     this.swarm.on('connection', (connection, peerInfo) => {
       store.replicate(connection)
+      wakeup.addStream(connection)
     })
 
     this.pairing = new BlindPairing(this.swarm)
@@ -79,7 +83,7 @@ class ContextPairer extends ReadyResource {
             encryptionKey: result.encryptionKey,
             bootstrap: this.bootstrap,
             schema: this.schema,
-            autobase: this.autobase
+            autobase: { ...this.autobase, wakeup: this.wakeup }
           })
         }
         this.store = null
@@ -93,6 +97,7 @@ class ContextPairer extends ReadyResource {
     if (this.candidate) await this.candidate.close()
     if (this.pairing) await this.pairing.close()
     if (this.swarm) await this.swarm.destroy()
+    if (this.wakeup) await this.wakeup.destroy()
     if (this.store) await this.store.close()
 
     if (this.onreject) {
@@ -135,6 +140,7 @@ export class Context extends ReadyResource {
     this.member = null
     this.pairing = null
     this.swarm = opts.swarm || null
+    this.wakeup = opts.autobase?.wakeup || new Wakeup()
     this.autobaseOptions = opts.autobase || {}
     this._resourcesReady = false
 
@@ -167,6 +173,7 @@ export class Context extends ReadyResource {
         })
       },
       apply: this._apply.bind(this),
+      wakeup: this.wakeup,
       ...this.autobaseOptions
     })
 
@@ -188,10 +195,11 @@ export class Context extends ReadyResource {
     }
 
     this.swarm.on('connection', (connection, peerInfo) => {
-      this.store.replicate(connection)
+      this.base.replicate(connection)
+      this.wakeup.addStream(connection)
     })
 
-    this.pairing = new BlindPairing(this.swarm)
+    this.pairing = new BlindPairing(this.swarm, { wakeup: this.base.wakeupProtocol })
     this.member = this.pairing.addMember({
       discoveryKey: this.base.discoveryKey,
       onadd: async (candidate) => {
@@ -260,6 +268,7 @@ export class Context extends ReadyResource {
     if (this.member) await this.member.close()
     if (this.pairing) await this.pairing.close()
     if (this.swarm) await this.swarm.destroy()
+    if (this.wakeup) await this.wakeup.destroy()
     if (this.base) await this.base.close()
   }
 
