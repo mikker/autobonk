@@ -1,69 +1,29 @@
-name: Test
-
+name: CI
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+    name: Checks
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: mikker/holepunch-actions/setup@main
+      - run: npm run lint
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run lint
-        run: |
-          npm run lint
-
-  test-node:
-    runs-on: ubuntu-latest
-
+  test:
+    runs-on: ${{ matrix.os }}
+    name: Test ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+          - os: macos-latest
+          - os: windows-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        run: |
-          npm run test:node && \
-            node example/basic/basic.js && \
-            node example/forum/forum.js
-
-  test-bare:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Install bare
-        run: npm install -g bare
-
-      - name: Run tests
-        run: |
-          npm run test:bare && \
-            bare example/basic/basic.js && \
-            bare example/forum/forum.js
+      - uses: mikker/holepunch-actions/setup@main
+      - run: npm install -g bare-runtime
+      - run: npm test
