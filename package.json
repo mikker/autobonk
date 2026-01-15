@@ -1,8 +1,14 @@
 {
   "name": "autobonk",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "src",
+    "README.md",
+    "CHANGELOG.md"
+  ],
   "scripts": {
     "test": "npm run test:node && npm run test:bare",
     "test:node": "brittle-node --timeout 60000 test/*.test.js",
