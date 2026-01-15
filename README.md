@@ -10,6 +10,7 @@ Autobonk is a ready-made manager and context runtime for building Hypercore-powe
 - Context base class wires Autobase, Hyperbee views, and the built-in permission system.
 - Schema extension helpers (`extendSchema`, `extendDb`, `extendDispatch`) let projects compose additional tables or routes.
 - Pairing flow handles invite-based onboarding with encryption and optional bootstrap peers.
+- Optional blind-peering integration keeps contexts available via configured blind peers.
 - Subclasses get lifecycle hooks for provisioning and tearing down auxiliary resources like Hyperblobs.
 
 ## Usage
@@ -85,7 +86,8 @@ Instantiate a manager rooted at `baseDir`. Provide the context constructor and s
 {
   ContextClass, // required subclass of Context
   schema, // required { db, dispatch }
-  bootstrap // optional Hyperswarm bootstrap peers
+  bootstrap, // optional Hyperswarm bootstrap peers
+  blindPeering // optional blind-peering options or instance
 }
 ```
 
@@ -134,6 +136,7 @@ Construct a context around a corestore namespace. Projects typically instantiate
   encryptionKey, // optional symmetric encryption key buffer
   bootstrap, // optional Hyperswarm bootstrap peers
   swarm, // optional Hyperswarm instance to reuse
+  blindPeering, // optional blind-peering options or instance
   autobase // optional additional Autobase constructor options
 }
 ```
@@ -145,6 +148,17 @@ Open the underlying Autobase, initialize the permission seed, and join the repli
 #### `await context.close()`
 
 Stop the pairing helpers, destroy the swarm, and close the Autobase.
+
+#### Blind peering
+
+Provide `blindPeering` options to `Manager` or `Context` to mirror Autobase cores to blind peers. The object is passed to `new BlindPeering(swarm, store, opts)` and may include an `autobase` key for `addAutobaseBackground` options. You may also pass a pre-built BlindPeering instance.
+
+```
+{
+  mirrors: ['...'],
+  autobase: { pick: 2 }
+}
+```
 
 ##### Subclass lifecycle hooks
 

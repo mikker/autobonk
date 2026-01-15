@@ -5,6 +5,7 @@ import Autobase from 'autobase'
 import Hyperswarm from 'hyperswarm'
 import HyperDB from 'hyperdb'
 import BlindPairing from 'blind-pairing'
+import BlindPeering from 'blind-peering'
 import Wakeup from 'protomux-wakeup'
 
 const OWNER_ROLE_NAME = 'owner'
@@ -39,6 +40,7 @@ class ContextPairer extends ReadyResource {
     this.wakeup = new Wakeup()
     this.pairing = null
     this.candidate = null
+    this.blindPeering = opts.blindPeering || null
 
     this.onresolve = null
     this.onreject = null
@@ -82,6 +84,7 @@ class ContextPairer extends ReadyResource {
             key: result.key,
             encryptionKey: result.encryptionKey,
             bootstrap: this.bootstrap,
+            blindPeering: this.blindPeering,
             schema: this.schema,
             autobase: { ...this.autobase, wakeup: this.wakeup }
           })
@@ -142,6 +145,10 @@ export class Context extends ReadyResource {
     this.swarm = opts.swarm || null
     this.wakeup = opts.autobase?.wakeup || new Wakeup()
     this.autobaseOptions = opts.autobase || {}
+    this.blindPeering = null
+    this.blindPeeringOptions = null
+    this._ownsBlindPeering = false
+    this._blindPeeringAttached = false
     this._resourcesReady = false
 
     this.schema = opts.schema
@@ -156,7 +163,19 @@ export class Context extends ReadyResource {
     if (typeof this.setupRoutes === 'function') this.setupRoutes()
 
     this._boot(opts)
+    this._configureBlindPeering(opts)
     this.ready()
+  }
+
+  _configureBlindPeering(opts = {}) {
+    if (!opts.blindPeering) return
+
+    if (typeof opts.blindPeering.addAutobaseBackground === 'function') {
+      this.blindPeering = opts.blindPeering
+      return
+    }
+
+    this.blindPeeringOptions = opts.blindPeering
   }
 
   _boot(opts = {}) {
@@ -259,6 +278,7 @@ export class Context extends ReadyResource {
       }
     })
 
+    this._maybeSetupBlindPeering()
     this.swarm.join(this.base.discoveryKey)
   }
 
@@ -267,9 +287,41 @@ export class Context extends ReadyResource {
 
     if (this.member) await this.member.close()
     if (this.pairing) await this.pairing.close()
+    if (this.blindPeering && this._ownsBlindPeering) await this.blindPeering.close()
     if (this.swarm) await this.swarm.destroy()
     if (this.wakeup) await this.wakeup.destroy()
     if (this.base) await this.base.close()
+  }
+
+  _maybeSetupBlindPeering() {
+    if (!this.blindPeering && !this.blindPeeringOptions) return
+
+    let autobase = null
+
+    if (!this.blindPeering && this.blindPeeringOptions) {
+      const options = { ...this.blindPeeringOptions }
+      autobase = options.autobase || null
+      delete options.autobase
+
+      this.blindPeering = new BlindPeering(this.swarm, this.store, {
+        wakeup: this.wakeup,
+        ...options
+      })
+      this._ownsBlindPeering = true
+    } else if (this.blindPeeringOptions && this.blindPeeringOptions.autobase) {
+      autobase = this.blindPeeringOptions.autobase
+    }
+
+    if (this._blindPeeringAttached || !this.blindPeering) return
+    this._blindPeeringAttached = true
+
+    if (autobase && typeof autobase === 'object') {
+      const { target, ...autobaseOptions } = autobase
+      this.blindPeering.addAutobaseBackground(this.base, target, autobaseOptions)
+      return
+    }
+
+    this.blindPeering.addAutobaseBackground(this.base)
   }
 
   async _apply(nodes, view, base) {

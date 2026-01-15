@@ -20,6 +20,7 @@ export class Manager extends ReadyResource {
     this.schema = opts.schema
     this.bootstrap = opts.bootstrap || null
     this.autobase = opts.autobase || null
+    this.blindPeering = opts.blindPeering || null
     this.corestore = new Corestore(join(baseDir, 'contexts'))
     this.localDb = null
     this.contexts = new Map()
@@ -57,6 +58,7 @@ export class Manager extends ReadyResource {
     const context = new this.ContextClass(contextStore, {
       schema: this.schema,
       bootstrap: this.bootstrap,
+      blindPeering: this.blindPeering,
       autobase: this.autobase
     })
     await context.ready()
@@ -82,6 +84,7 @@ export class Manager extends ReadyResource {
       key: context.key,
       encryptionKey: context.encryptionKey,
       bootstrap: this.bootstrap,
+      blindPeering: this.blindPeering,
       autobase: this.autobase
     })
 
@@ -99,6 +102,7 @@ export class Manager extends ReadyResource {
     const pairer = this.ContextClass.pair(tempStore, invite, {
       schema: this.schema,
       bootstrap: this.bootstrap,
+      blindPeering: this.blindPeering,
       autobase: this.autobase
     })
     const tempContext = await pairer.resolve()
@@ -117,6 +121,7 @@ export class Manager extends ReadyResource {
       key,
       encryptionKey,
       bootstrap: this.bootstrap,
+      blindPeering: this.blindPeering,
       autobase: this.autobase
     })
     await context.ready()
@@ -189,6 +194,7 @@ export class Manager extends ReadyResource {
       key,
       encryptionKey,
       bootstrap: this.bootstrap,
+      blindPeering: this.blindPeering,
       autobase: this.autobase
     })
     await context.ready()

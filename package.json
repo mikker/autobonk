@@ -20,6 +20,7 @@
     "autobase": "^7.21.1",
     "bare-path": "^3.0.0",
     "blind-pairing": "^2.3.1",
+    "blind-peering": "^1.15.0",
     "corestore": "^7.5.0",
     "hypercore-crypto": "^3.6.1",
     "hyperdb": "^4.19.1",
