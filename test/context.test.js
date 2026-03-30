@@ -257,8 +257,8 @@ test('addWriter metadata passes through to Autobase', async (t) => {
   t.is(captured[1].isIndexer, true, 'default write keeps Autobase indexing behavior')
 })
 
-test('blind peering uses injected instance without owning it', async (t) => {
-  t.plan(4)
+test('blind peering creates and owns the helper', async (t) => {
+  t.plan(2)
 
   const testId = Date.now()
   const baseDir = join(tmpdir(), 'autobonk-test')
@@ -267,17 +267,6 @@ test('blind peering uses injected instance without owning it', async (t) => {
   let room = null
   let store = null
 
-  const calls = { add: 0, close: 0, base: null }
-  const fakeBlindPeering = {
-    addAutobaseBackground(base) {
-      calls.add += 1
-      calls.base = base
-    },
-    close() {
-      calls.close += 1
-    }
-  }
-
   t.teardown(async () => {
     if (room && !room.closed) await room.close()
     if (store) await store.close()
@@ -285,15 +274,16 @@ test('blind peering uses injected instance without owning it', async (t) => {
   })
 
   store = new Corestore(storageDir)
-  room = new Room(store, { schema, blindPeering: fakeBlindPeering })
+  room = new Room(store, { schema, blindPeering: { mirrors: [] } })
   await room.ready()
 
-  t.is(calls.add, 1, 'autobase mirrored once')
-  t.ok(calls.base === room.base, 'autobase instance passed to blind peering')
-  t.is(room.blindPeering, fakeBlindPeering, 'context exposes injected instance')
+  t.ok(room.blindPeering, 'blind peering helper created')
 
+  const blindPeering = room.blindPeering
   await room.close()
-  t.is(calls.close, 0, 'context does not close injected blind peering')
+  room = null
+
+  t.ok(blindPeering.closed, 'blind peering helper closed with context')
 })
 
 test('ACL-based permissions work', async (t) => {

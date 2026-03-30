@@ -1,7 +1,10 @@
+import { join } from 'path'
+
 import Corestore from 'corestore'
 import Hyperbee from 'hyperbee'
-import { join } from 'path'
 import ReadyResource from 'ready-resource'
+
+import { ContextNetwork } from './network.js'
 
 export class Manager extends ReadyResource {
   constructor(baseDir, opts = {}) {
@@ -23,6 +26,7 @@ export class Manager extends ReadyResource {
     this.blindPeering = opts.blindPeering || null
     this.corestore = new Corestore(join(baseDir, 'contexts'))
     this.localDb = null
+    this.network = null
     this.contexts = new Map()
     this.pendingContexts = new Map()
 
@@ -31,6 +35,9 @@ export class Manager extends ReadyResource {
 
   async _open() {
     await this.corestore.ready()
+
+    this.network = new ContextNetwork(this.corestore, { bootstrap: this.bootstrap })
+    await this.network.ready()
 
     const localCore = this.corestore.get({ name: 'local' })
     await localCore.ready()
@@ -47,20 +54,26 @@ export class Manager extends ReadyResource {
     this.contexts.clear()
     this.pendingContexts.clear()
 
+    if (this.network) await this.network.close()
     if (this.localDb) await this.localDb.close()
     if (this.corestore) await this.corestore.close()
+  }
+
+  _createContext(store, opts = {}) {
+    return new this.ContextClass(store, {
+      schema: this.schema,
+      network: this.network,
+      blindPeering: this.blindPeering,
+      autobase: this.autobase,
+      ...opts
+    })
   }
 
   async createContext(opts = {}) {
     await this.ready()
 
     const contextStore = this.corestore.namespace(`ctx-${Date.now()}`)
-    const context = new this.ContextClass(contextStore, {
-      schema: this.schema,
-      bootstrap: this.bootstrap,
-      blindPeering: this.blindPeering,
-      autobase: this.autobase
-    })
+    const context = this._createContext(contextStore)
     await context.ready()
 
     const keyHex = context.key.toString('hex')
@@ -79,13 +92,9 @@ export class Manager extends ReadyResource {
     await context.close()
 
     const finalStore = this.corestore.namespace(contextRecord.namespace)
-    const finalContext = new this.ContextClass(finalStore, {
-      schema: this.schema,
+    const finalContext = this._createContext(finalStore, {
       key: context.key,
-      encryptionKey: context.encryptionKey,
-      bootstrap: this.bootstrap,
-      blindPeering: this.blindPeering,
-      autobase: this.autobase
+      encryptionKey: context.encryptionKey
     })
 
     await finalContext.ready()
@@ -105,24 +114,29 @@ export class Manager extends ReadyResource {
       blindPeering: this.blindPeering,
       autobase: this.autobase
     })
-    const tempContext = await pairer.resolve()
-    await tempContext.ready()
+    let tempContext = null
+    let key = null
+    let encryptionKey = null
+    let keyHex = null
 
-    const key = tempContext.key
-    const encryptionKey = tempContext.encryptionKey
-    const keyHex = key.toString('hex')
+    try {
+      tempContext = await pairer.resolve()
+      await tempContext.ready()
 
-    await tempContext.close()
+      key = tempContext.key
+      encryptionKey = tempContext.encryptionKey
+      keyHex = key.toString('hex')
+
+      await tempContext.close()
+    } finally {
+      if (!pairer.closed) await pairer.close()
+    }
 
     const finalNamespace = `ctx-${keyHex.slice(0, 16)}`
     const finalStore = this.corestore.namespace(finalNamespace)
-    const context = new this.ContextClass(finalStore, {
-      schema: this.schema,
+    const context = this._createContext(finalStore, {
       key,
-      encryptionKey,
-      bootstrap: this.bootstrap,
-      blindPeering: this.blindPeering,
-      autobase: this.autobase
+      encryptionKey
     })
     await context.ready()
 
@@ -189,13 +203,9 @@ export class Manager extends ReadyResource {
       ? contextRecord.encryptionKey
       : Buffer.from(contextRecord.encryptionKey, 'hex')
 
-    const context = new this.ContextClass(contextStore, {
-      schema: this.schema,
+    const context = this._createContext(contextStore, {
       key,
-      encryptionKey,
-      bootstrap: this.bootstrap,
-      blindPeering: this.blindPeering,
-      autobase: this.autobase
+      encryptionKey
     })
     await context.ready()
 

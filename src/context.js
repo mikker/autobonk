@@ -2,11 +2,11 @@ import z32 from 'z32'
 import b4a from 'b4a'
 import ReadyResource from 'ready-resource'
 import Autobase from 'autobase'
-import Hyperswarm from 'hyperswarm'
 import HyperDB from 'hyperdb'
 import BlindPairing from 'blind-pairing'
 import BlindPeering from 'blind-peering'
-import Wakeup from 'protomux-wakeup'
+
+import { ContextNetwork } from './network.js'
 
 const OWNER_ROLE_NAME = 'owner'
 const OWNER_PERMISSIONS = [
@@ -32,12 +32,10 @@ class ContextPairer extends ReadyResource {
 
     this.store = store
     this.invite = invite
-    this.bootstrap = opts.bootstrap || null
     this.autobase = opts.autobase || null
     this.schema = opts.schema
     this.ContextClass = opts.ContextClass || Context
-    this.swarm = null
-    this.wakeup = new Wakeup()
+    this.network = new ContextNetwork(store, { bootstrap: opts.bootstrap || null })
     this.pairing = null
     this.candidate = null
     this.blindPeering = opts.blindPeering || null
@@ -51,23 +49,9 @@ class ContextPairer extends ReadyResource {
   }
 
   async _open() {
-    await this.store.ready()
+    await this.network.ready()
 
-    if (!this.swarm) {
-      this.swarm = new Hyperswarm({
-        keyPair: await this.store.createKeyPair('hyperswarm'),
-        bootstrap: this.bootstrap
-      })
-    }
-
-    const store = this.store
-    const wakeup = this.wakeup
-    this.swarm.on('connection', (connection, peerInfo) => {
-      store.replicate(connection)
-      wakeup.addStream(connection)
-    })
-
-    this.pairing = new BlindPairing(this.swarm)
+    this.pairing = new BlindPairing(this.network.swarm)
 
     const core = Autobase.getLocalCore(this.store)
     await core.ready()
@@ -79,14 +63,15 @@ class ContextPairer extends ReadyResource {
       userData: key,
       onadd: async (result) => {
         if (this.context === null) {
+          const network = this.network
+          this.network = null
           this.context = new this.ContextClass(this.store, {
-            swarm: this.swarm,
+            localNetwork: network,
             key: result.key,
             encryptionKey: result.encryptionKey,
-            bootstrap: this.bootstrap,
             blindPeering: this.blindPeering,
             schema: this.schema,
-            autobase: { ...this.autobase, wakeup: this.wakeup }
+            autobase: this.autobase
           })
         }
         this.store = null
@@ -99,8 +84,7 @@ class ContextPairer extends ReadyResource {
   async _close() {
     if (this.candidate) await this.candidate.close()
     if (this.pairing) await this.pairing.close()
-    if (this.swarm) await this.swarm.destroy()
-    if (this.wakeup) await this.wakeup.destroy()
+    if (this.network) await this.network.close()
     if (this.store) await this.store.close()
 
     if (this.onreject) {
@@ -139,16 +123,15 @@ export class Context extends ReadyResource {
     this.store = store
 
     this.base = null
-    this.bootstrap = opts.bootstrap || null
     this.member = null
     this.pairing = null
-    this.swarm = opts.swarm || null
-    this.wakeup = opts.autobase?.wakeup || new Wakeup()
+    this.discovery = null
+    this.localNetwork =
+      opts.localNetwork || (opts.network ? null : new ContextNetwork(store, { bootstrap: opts.bootstrap || null }))
+    this.network = opts.network || this.localNetwork
     this.autobaseOptions = opts.autobase || {}
     this.blindPeering = null
-    this.blindPeeringOptions = null
-    this._ownsBlindPeering = false
-    this._blindPeeringAttached = false
+    this.blindPeeringOptions = opts.blindPeering || null
     this._resourcesReady = false
 
     this.schema = opts.schema
@@ -163,19 +146,7 @@ export class Context extends ReadyResource {
     if (typeof this.setupRoutes === 'function') this.setupRoutes()
 
     this._boot(opts)
-    this._configureBlindPeering(opts)
     this.ready()
-  }
-
-  _configureBlindPeering(opts = {}) {
-    if (!opts.blindPeering) return
-
-    if (typeof opts.blindPeering.addAutobaseBackground === 'function') {
-      this.blindPeering = opts.blindPeering
-      return
-    }
-
-    this.blindPeeringOptions = opts.blindPeering
   }
 
   _boot(opts = {}) {
@@ -192,7 +163,7 @@ export class Context extends ReadyResource {
         })
       },
       apply: this._apply.bind(this),
-      wakeup: this.wakeup,
+      wakeup: this.network.wakeup,
       ...this.autobaseOptions
     })
 
@@ -202,23 +173,12 @@ export class Context extends ReadyResource {
   }
 
   async _open() {
+    await this.network.ready()
     await this.base.ready()
     await this._maybeInitContext()
     await this._maybeSetupResources()
 
-    if (!this.swarm) {
-      this.swarm = new Hyperswarm({
-        keyPair: await this.store.createKeyPair('hyperswarm'),
-        bootstrap: this.bootstrap
-      })
-    }
-
-    this.swarm.on('connection', (connection, peerInfo) => {
-      this.base.replicate(connection)
-      this.wakeup.addStream(connection)
-    })
-
-    this.pairing = new BlindPairing(this.swarm, { wakeup: this.base.wakeupProtocol })
+    this.pairing = new BlindPairing(this.network.swarm, { wakeup: this.base.wakeupProtocol })
     this.member = this.pairing.addMember({
       discoveryKey: this.base.discoveryKey,
       onadd: async (candidate) => {
@@ -278,8 +238,8 @@ export class Context extends ReadyResource {
       }
     })
 
-    this._maybeSetupBlindPeering()
-    this.swarm.join(this.base.discoveryKey)
+    this._setupBlindPeering()
+    this.discovery = this.network.swarm.join(this.base.discoveryKey)
   }
 
   async _close() {
@@ -287,33 +247,20 @@ export class Context extends ReadyResource {
 
     if (this.member) await this.member.close()
     if (this.pairing) await this.pairing.close()
-    if (this.blindPeering && this._ownsBlindPeering) await this.blindPeering.close()
-    if (this.swarm) await this.swarm.destroy()
-    if (this.wakeup) await this.wakeup.destroy()
+    if (this.blindPeering) await this.blindPeering.close()
+    if (this.discovery) await this.discovery.destroy()
     if (this.base) await this.base.close()
+    if (this.localNetwork) await this.localNetwork.close()
   }
 
-  _maybeSetupBlindPeering() {
-    if (!this.blindPeering && !this.blindPeeringOptions) return
+  _setupBlindPeering() {
+    if (this.blindPeering || !this.blindPeeringOptions) return
 
-    let autobase = null
-
-    if (!this.blindPeering && this.blindPeeringOptions) {
-      const options = { ...this.blindPeeringOptions }
-      autobase = options.autobase || null
-      delete options.autobase
-
-      this.blindPeering = new BlindPeering(this.swarm, this.store, {
-        wakeup: this.wakeup,
-        ...options
-      })
-      this._ownsBlindPeering = true
-    } else if (this.blindPeeringOptions && this.blindPeeringOptions.autobase) {
-      autobase = this.blindPeeringOptions.autobase
-    }
-
-    if (this._blindPeeringAttached || !this.blindPeering) return
-    this._blindPeeringAttached = true
+    const { autobase, ...options } = this.blindPeeringOptions
+    this.blindPeering = new BlindPeering(this.network.swarm, this.store, {
+      wakeup: this.network.wakeup,
+      ...options
+    })
 
     if (autobase && typeof autobase === 'object') {
       const { target, ...autobaseOptions } = autobase
@@ -346,6 +293,10 @@ export class Context extends ReadyResource {
 
   get discoveryKey() {
     return this.base.discoveryKey
+  }
+
+  get swarm() {
+    return this.network.swarm
   }
 
   get writerKey() {

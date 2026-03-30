@@ -72,6 +72,22 @@ await manager.close()
 
 ## API
 
+### ContextNetwork
+
+`ContextNetwork` extends `ReadyResource` and owns the replication transport for one app instance: one `Hyperswarm`, one `Wakeup`, and one store-level replication handler.
+
+#### `const network = new ContextNetwork(store, [options])`
+
+Create a reusable transport runtime for a `Corestore` or namespace.
+
+`options` takes the following keys:
+
+```
+{
+  bootstrap // optional Hyperswarm bootstrap peers
+}
+```
+
 ### Manager
 
 Manager extends `ReadyResource`; call `await manager.ready()` before first use and `await manager.close()` when you are finished.
@@ -87,9 +103,11 @@ Instantiate a manager rooted at `baseDir`. Provide the context constructor and s
   ContextClass, // required subclass of Context
   schema, // required { db, dispatch }
   bootstrap, // optional Hyperswarm bootstrap peers
-  blindPeering // optional blind-peering options or instance
+  blindPeering // optional blind-peering options
 }
 ```
+
+Managers reuse one long-lived `ContextNetwork` across their contexts by default.
 
 #### `await manager.ready()`
 
@@ -121,7 +139,7 @@ Remove cached metadata for the given context key. Closes any active instance and
 
 ### Context
 
-Context extends `ReadyResource`; call `await context.ready()` before interacting and `await context.close()` to release swarm resources.
+Context extends `ReadyResource`; call `await context.ready()` before interacting and `await context.close()` when you are done.
 
 #### `const context = new Context(store, opts)`
 
@@ -135,23 +153,23 @@ Construct a context around a corestore namespace. Projects typically instantiate
   key, // optional existing context key buffer
   encryptionKey, // optional symmetric encryption key buffer
   bootstrap, // optional Hyperswarm bootstrap peers
-  swarm, // optional Hyperswarm instance to reuse
-  blindPeering, // optional blind-peering options or instance
+  network, // optional ContextNetwork instance to reuse
+  blindPeering, // optional blind-peering options
   autobase // optional additional Autobase constructor options
 }
 ```
 
 #### `await context.ready()`
 
-Open the underlying Autobase, initialize the permission seed, and join the replication swarm if necessary.
+Open the underlying Autobase, initialize the permission seed, and join the context discovery topic on the configured network.
 
 #### `await context.close()`
 
-Stop the pairing helpers, destroy the swarm, and close the Autobase.
+Stop the pairing helpers, leave the context topic, close the Autobase, and close the network when the context owns it.
 
 #### Blind peering
 
-Provide `blindPeering` options to `Manager` or `Context` to mirror Autobase cores to blind peers. The object is passed to `new BlindPeering(swarm, store, opts)` and may include an `autobase` key for `addAutobaseBackground` options. You may also pass a pre-built BlindPeering instance.
+Provide `blindPeering` options to `Manager` or `Context` to mirror Autobase cores to blind peers. The object is passed to `new BlindPeering(network.swarm, store, opts)` and may include an `autobase` key for `addAutobaseBackground` options.
 
 ```
 {
