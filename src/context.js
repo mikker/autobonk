@@ -61,7 +61,7 @@ class ContextPairer extends ReadyResource {
     this.candidate = this.pairing.addCandidate({
       invite: z32.decode(this.invite),
       userData: key,
-      onadd: async (result) => {
+      onadd: (result) => {
         if (this.context === null) {
           const network = this.network
           this.network = null
@@ -127,7 +127,8 @@ export class Context extends ReadyResource {
     this.pairing = null
     this.discovery = null
     this.localNetwork =
-      opts.localNetwork || (opts.network ? null : new ContextNetwork(store, { bootstrap: opts.bootstrap || null }))
+      opts.localNetwork ||
+      (opts.network ? null : new ContextNetwork(store, { bootstrap: opts.bootstrap || null }))
     this.network = opts.network || this.localNetwork
     this.autobaseOptions = opts.autobase || {}
     this.blindPeering = null
@@ -189,7 +190,7 @@ export class Context extends ReadyResource {
           return
         }
 
-        const openAndDeny = async (status) => {
+        const openAndDeny = (status) => {
           try {
             candidate.open(inv.publicKey)
             candidate.deny({ status })
@@ -199,12 +200,12 @@ export class Context extends ReadyResource {
         }
 
         if (inv.revokedAt) {
-          await openAndDeny(2)
+          openAndDeny(2)
           return
         }
 
         if (inv.expires && inv.expires > 0 && inv.expires <= Date.now()) {
-          await openAndDeny(3)
+          openAndDeny(3)
           return
         }
 
@@ -212,7 +213,7 @@ export class Context extends ReadyResource {
           await this.requirePermission(this.writerKey, 'user:invite')
         } catch (err) {
           if (err instanceof PermissionError) {
-            await openAndDeny(1)
+            openAndDeny(1)
             return
           }
           throw err
